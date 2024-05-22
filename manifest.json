@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "Code Analyzer",
+    "version": "1.0",
+    "description": "Analyzes code for complexity, errors, and maintainability",
+    "permissions": ["storage", "scripting"],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "background": {
+      "service_worker": "background.js"
+    }
+  }

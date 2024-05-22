@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "escomplex": "^2.0.0-alpha",
+    "jscpd": "^3.5.10",
+    "jshint": "^2.13.6"
+  },
+  "devDependencies": {
+    "eslint": "^9.3.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "scripts": {
+    "build": "webpack"
+  }
+}
