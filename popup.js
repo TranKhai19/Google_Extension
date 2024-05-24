@@ -10,16 +10,13 @@ analyzeButton.addEventListener('click', async () => {
   }
 
   const fileContents = await readFile(file);
-  const language = detectLanguage(file.name); // Detect language based on filename
+  const language = detectLanguage(file);
 
-  if (language === "javascript") {
-    const analysisResults = await analyzeJavaScript(fileContents);
+  try {
+    const analysisResults = await analyzeCode(language, fileContents);
     displayResults(analysisResults);
-  } else if (language === "python") {
-    const analysisResults = await analyzePython(fileContents);
-    displayResults(analysisResults);
-  } else {
-    resultsDiv.textContent = "Unsupported language. Please upload JavaScript or Python code.";
+  } catch (error) {
+    resultsDiv.textContent = `Error: ${error.message}`;
   }
 });
 
@@ -33,40 +30,71 @@ function readFile(file) {
   });
 }
 
-// Simple language detection based on filename extension
-function detectLanguage(fileName) {
-  const ext = fileName.split('.').pop();
-  if (ext === "js" || ext === "jsx") {
+// Improved language detection with MIME types
+function detectLanguage(file) {
+  const ext = file.name.split('.').pop();
+  const mimeType = file.type;
+
+  if (ext === "js" || ext === "jsx" || mimeType.includes('javascript')) {
     return "javascript";
-  } else if (ext === "py") {
+  } else if (ext === "py" || mimeType.includes('python')) {
     return "python";
   } else {
     return "unknown";
   }
 }
 
-// Placeholder function for JavaScript analysis
-function analyzeJavaScript(code) {
-  // Implement JavaScript-specific analysis using ESLint, etc.
-  // ...
+// Unified analyzeCode function with language detection
+async function analyzeCode(language, code) {
+  if (language === "javascript") {
+    return await analyzeJavaScript(code);
+  } else if (language === "python") {
+    return await analyzePython(code); // Implement Python analysis (placeholder)
+  } else {
+    throw new Error(`Unsupported language: ${language}`);
+  }
+}
+
+// Placeholder function for JavaScript analysis using ESLint
+async function analyzeJavaScript(code) {
+  // You'll need to install ESLint: npm install eslint
+  const ESLint = require('eslint').ESLint;
+
+  const eslint = new ESLint();
+  const report = await eslint.lintText(code);
+  const messages = report[0].messages;
+
+  const errors = messages.filter(message => message.severity === 1).length;
+  const warnings = messages.filter(message => message.severity === 0).length;
+
+  // Implement complexity, duplicates, and maintainability analysis (placeholder)
+  const complexity = 0;
+  const duplicates = 0;
+  const maintainability = 0;
+
   return {
-    errors: 0, // Example - You need to actually analyze the code
-    complexity: 0, // Example - You need to calculate the complexity
-    duplicates: 0, // Example - You need to detect duplicates
-    maintainability: 0 // Example - You need to calculate maintainability
+    errors,
+    warnings,
+    complexity,
+    duplicates,
+    maintainability,
   };
 }
 
-// Placeholder function for Python analysis
-function analyzePython(code) {
-  // Implement Python-specific analysis using PyLint, etc.
-  // ...
-  return {
-    errors: 0, // Example - You need to actually analyze the code
-    complexity: 0, // Example - You need to calculate the complexity
-    duplicates: 0, // Example - You need to detect duplicates
-    maintainability: 0 // Example - You need to calculate maintainability
-  };
+// Placeholder function for Python analysis (replace with PyLint integration)
+async function analyzePython(code) {
+  const response = await fetch('/analyze_python', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error analyzing code: ${response.statusText}`);
+  }
+
+  const analysisResults = await response.json();
+  return analysisResults;
 }
 
 // Display the analysis results
@@ -74,6 +102,7 @@ function displayResults(results) {
   resultsDiv.innerHTML = `
     <h3>Complexity: ${results.complexity}</h3>
     <h3>Errors: ${results.errors}</h3>
+    <h3>Warnings: ${results.warnings}</h3>
     <h3>Duplicates: ${results.duplicates}</h3>
     <h3>Maintainability: ${results.maintainability}</h3>
   `;
